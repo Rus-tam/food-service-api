@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
@@ -10,28 +10,39 @@ import { PayloadDataDto } from '../auth/dto/payloadData.dto';
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @HttpCode(201)
   @UseGuards(JwtAuthGuard)
   @Post()
   async newUser(@Body() userData: CreateUserDto): Promise<User> {
     return this.userService.create(userData);
   }
 
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @Get('/all')
   async allUsers(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
 
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @Get('/:userId')
   async findById(@Param('userId', ParseIntPipe) userId: number, @UserData() userData: PayloadDataDto): Promise<User | undefined> {
     const user = await this.userService.getById(userId);
-    console.log(userData);
+    // console.log(userData);
 
     if (!user) {
       throw new NotFoundException('User not found!');
     }
 
     return user;
+  }
+
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @Delete('/delete/:userId')
+  async deleteById(@Param('userId', ParseIntPipe) userId: number) {
+    const message = await this.userService.deleteById(userId);
+    return message;
   }
 }

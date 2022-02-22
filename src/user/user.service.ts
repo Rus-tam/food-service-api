@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { genSalt, hash } from 'bcryptjs';
@@ -35,11 +35,25 @@ export class UserService {
     return users;
   }
 
-  async getById(id): Promise<User | undefined> {
+  async getById(id: number): Promise<User | undefined> {
     return this.repo.findOne({ id });
   }
 
-  async getByEmail(email): Promise<User | undefined> {
+  async getByEmail(email: string): Promise<User | undefined> {
     return this.repo.findOne({ email });
+  }
+
+  async deleteById(id: number) {
+    const user = await this.getById(id);
+
+    if (!user) {
+      throw new NotFoundException('User no found');
+    }
+
+    await this.repo.delete(id);
+
+    return {
+      message: `User ${user.name} was deleted`,
+    };
   }
 }
