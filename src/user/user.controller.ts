@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
@@ -41,8 +41,15 @@ export class UserController {
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @Delete('/delete/:userId')
-  async deleteById(@Param('userId', ParseIntPipe) userId: number) {
+  async deleteById(@Param('userId', ParseIntPipe) userId: number): Promise<{ message: string }> {
     const message = await this.userService.deleteById(userId);
     return message;
+  }
+
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @Patch('update/:userId')
+  async updateUser(@Body() updData: CreateUserDto, @Param('userId', ParseIntPipe) userId: number) {
+    return this.userService.updateUser(updData, userId);
   }
 }

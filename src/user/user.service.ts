@@ -3,7 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { genSalt, hash } from 'bcryptjs';
+import { genSalt, hashSync } from 'bcryptjs';
+import { use } from 'passport';
 
 @Injectable()
 export class UserService {
@@ -11,7 +12,7 @@ export class UserService {
 
   async create(userData: CreateUserDto): Promise<User | undefined> {
     const salt = await genSalt(10);
-    const hashedPassword = await hash(userData.password, salt);
+    const hashedPassword = hashSync(userData.password, salt);
 
     const user = await this.getByEmail(userData.email);
 
@@ -36,6 +37,10 @@ export class UserService {
   }
 
   async getById(id: number): Promise<User | undefined> {
+    const user = await this.repo.findOne({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     return this.repo.findOne({ id });
   }
 
@@ -43,17 +48,28 @@ export class UserService {
     return this.repo.findOne({ email });
   }
 
-  async deleteById(id: number) {
+  async deleteById(id: number): Promise<{ message: string }> {
     const user = await this.getById(id);
-
-    if (!user) {
-      throw new NotFoundException('User no found');
-    }
-
     await this.repo.delete(id);
-
     return {
       message: `User ${user.name} was deleted`,
     };
+  }
+
+  async updateUser(updData: CreateUserDto, id: number): Promise<User> {
+    const user = await this.getById(id);
+
+    const salt = await genSalt(10);
+    const hashedPassword = hashSync(updData.password, salt);
+
+    const updatedUser = {
+      id: user.id,
+      name: updData.name,
+      email: updData.email,
+      password: hashedPassword,
+      isAdmin: updData.isAdmin,
+    };
+
+    return this.repo.save(updatedUser);
   }
 }
