@@ -11,5 +11,5 @@ export class PayloadDataDto {
   id: number;
 
   @IsBoolean()
-  isAdmin: boolean;
+  role: string;
 }

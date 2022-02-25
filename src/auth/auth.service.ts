@@ -9,7 +9,7 @@ import { PayloadDataDto } from './dto/payloadData.dto';
 export class AuthService {
   constructor(private readonly userService: UserService, private readonly jwtService: JwtService) {}
 
-  async validateUser(email: string, password: string): Promise<{ email: string; name: string; id: number; isAdmin: boolean }> {
+  async validateUser(email: string, password: string): Promise<{ email: string; name: string; id: number; role: string }> {
     const user = await this.userService.getByEmail(email);
 
     if (!user) {
@@ -20,7 +20,7 @@ export class AuthService {
       throw new UnauthorizedException('Wrong password');
     }
 
-    return { email: user.email, name: user.name, id: user.id, isAdmin: user.isAdmin };
+    return { email: user.email, name: user.name, id: user.id, role: user.role };
   }
 
   async login(userData: PayloadDataDto) {
@@ -28,7 +28,7 @@ export class AuthService {
       email: userData.email,
       name: userData.name,
       id: userData.id,
-      isAdmin: userData.isAdmin,
+      role: userData.role,
     };
     return {
       access_token: await this.jwtService.signAsync(payload),

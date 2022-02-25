@@ -24,7 +24,7 @@ export class UserService {
       name: userData.name,
       email: userData.email,
       password: hashedPassword,
-      isAdmin: userData.isAdmin,
+      role: userData.role,
     });
 
     return this.repo.save(newUser);
@@ -67,7 +67,7 @@ export class UserService {
       name: updData.name,
       email: updData.email,
       password: hashedPassword,
-      isAdmin: updData.isAdmin,
+      role: updData.role,
     };
 
     return this.repo.save(updatedUser);

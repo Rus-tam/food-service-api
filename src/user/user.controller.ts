@@ -5,27 +5,28 @@ import { User } from './user.entity';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { UserData } from '../decorators/user-data.decorator';
 import { PayloadDataDto } from '../auth/dto/payloadData.dto';
+import { AdminGuard } from '../auth/guards/admin.guard';
 
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
   @HttpCode(201)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post()
   async newUser(@Body() userData: CreateUserDto): Promise<User> {
     return this.userService.create(userData);
   }
 
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('/all')
   async allUsers(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
 
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('/:userId')
   async findById(@Param('userId', ParseIntPipe) userId: number, @UserData() userData: PayloadDataDto): Promise<User | undefined> {
     const user = await this.userService.getById(userId);
@@ -39,7 +40,7 @@ export class UserController {
   }
 
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Delete('/delete/:userId')
   async deleteById(@Param('userId', ParseIntPipe) userId: number): Promise<{ message: string }> {
     const message = await this.userService.deleteById(userId);
@@ -47,7 +48,7 @@ export class UserController {
   }
 
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Patch('update/:userId')
   async updateUser(@Body() updData: CreateUserDto, @Param('userId', ParseIntPipe) userId: number) {
     return this.userService.updateUser(updData, userId);
